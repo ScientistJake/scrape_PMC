@@ -1,4 +1,11 @@
-#pumed image scraper
+# Pumedcentral image scraper
+# By: Jake Warner
+# On: Feb 2, 2018
+# Inspired by the pmc sqlite scraper here: https://github.com/frangipane/scrape_pubmedcentral
+# Some of the functions in the above are broken though =(
+# The functions below work (for now) and are database free  
+
+
 library("RCurl")
 library("XML")
 library("httr")
@@ -16,40 +23,37 @@ getPMCIds <- function(searchterm,database,maxretrieve){
 
 getSummary <- function(id, database="pmc"){
   
-  url.base = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
-  ## eFetch utility
+  urlbase = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
   efetch = "efetch.fcgi?"
-  ## database to search
   db = paste0("db=",database)
-  ## retrieval mode: data format of record to be returned
   retmode = "retmode=xml"
   
-  ## compose url for eFetch
-  url.efetch = paste0(url.base, efetch, db, "&", "id=", id, "&", retmode)
+  #build up the url with the options
+  url.efetch = paste0(urlbase, efetch, db, "&", "id=", id, "&", retmode)
   
-  data.efetch = getURL(url.efetch)
-  data.xml = xmlParse(data.efetch)
+  response.efetch = getURL(url.efetch)
+  reponse.xml = xmlParse(response.efetch)
   
-  title = getNodeSet(data.xml,"//article-meta/title-group/article-title") %>% sapply(.,xmlValue)
+  title = getNodeSet(reponse.xml,"//article-meta/title-group/article-title") %>% sapply(.,xmlValue)
   
-  authors.surname = getNodeSet(data.xml,"//article-meta/contrib-group/contrib/name/surname") %>% sapply(.,xmlValue)
-  authors.firstname = getNodeSet(data.xml,"//article-meta/contrib-group/contrib/name/given-names") %>% sapply(.,xmlValue)
+  authors.surname = getNodeSet(reponse.xml,"//article-meta/contrib-group/contrib/name/surname") %>% sapply(.,xmlValue)
+  authors.firstname = getNodeSet(reponse.xml,"//article-meta/contrib-group/contrib/name/given-names") %>% sapply(.,xmlValue)
   authors = paste(authors.surname, authors.firstname, sep=",")
   
-  ## combine authors vector into one single string
+  #combine authorlist
   authors = paste(authors, collapse="; ")
   
-  abstract = getNodeSet(data.xml,"//article-meta/abstract") %>% sapply(.,xmlValue)
-  doi= getNodeSet(data.xml,"//article-meta/article-id[@pub-id-type='doi']") %>% sapply(.,xmlValue)
+  abstract = getNodeSet(reponse.xml,"//article-meta/abstract") %>% sapply(.,xmlValue)
+  doi= getNodeSet(reponse.xml,"//article-meta/article-id[@pub-id-type='doi']") %>% sapply(.,xmlValue)
   
   ## some articles lack a doi
   if (length(doi)==0) doi = ""
   
-  journal = getNodeSet(data.xml,"//journal-title") %>% sapply(.,xmlValue)
+  journal = getNodeSet(reponse.xml,"//journal-title") %>% sapply(.,xmlValue)
 
-  pubdate.day = getNodeSet(data.xml,"//pub-date[@pub-type='epub' or @date-type='pub']/day") %>% sapply(.,xmlValue)
-  pubdate.month = getNodeSet(data.xml,"//pub-date[@pub-type='epub' or @date-type='pub']/month") %>% sapply(.,xmlValue)
-  pubdate.year = getNodeSet(data.xml,"//pub-date[@pub-type='epub' or @date-type='pub']/year") %>% sapply(.,xmlValue)
+  pubdate.day = getNodeSet(reponse.xml,"//pub-date[@pub-type='epub' or @date-type='pub']/day") %>% sapply(.,xmlValue)
+  pubdate.month = getNodeSet(reponse.xml,"//pub-date[@pub-type='epub' or @date-type='pub']/month") %>% sapply(.,xmlValue)
+  pubdate.year = getNodeSet(reponse.xml,"//pub-date[@pub-type='epub' or @date-type='pub']/year") %>% sapply(.,xmlValue)
   pubdate = paste(pubdate.day,pubdate.month,pubdate.year, sep="/")
 
   article_meta = list(doi=doi, title=title, journal=journal, pubdate=pubdate,
@@ -59,12 +63,12 @@ getSummary <- function(id, database="pmc"){
 
 scrapeArticle = function(id) {
   
-  ## go to url of pmc full article for the given pmcid
-  ncbiurl.base = "https://www.ncbi.nlm.nih.gov/pmc/articles/"
-  url.article = paste0(ncbiurl.base, id)
-  response <- GET(url.article)
+  #visit pmc for the article, pass the response to getFigures
+  ncbiurl = "https://www.ncbi.nlm.nih.gov/pmc/articles/"
+  articleurl = paste0(ncbiurl, id)
+  response <- GET(articleurl)
   
-  ## check if url is valid
+  # check the status to see if the url is ok
   if(!identical(status_code(response), 200L)) {
     stop('sorry, bad url')
     return(0)
@@ -72,13 +76,13 @@ scrapeArticle = function(id) {
   
   article = content(response)
   
-  ## get urls and names of all popup figures in article
+  #call getFigures and extract the names, links, and captions
   figures = getFigures(article)
   fig.names = figures$fig.names
   fig.links = figures$fig.links
   fig.captions = figures$fig.captions
   
-  ## create dataframe to hold metadata of figures matching search terms
+  #load all the figure data into a df
   figDataframe = data.frame(
     Name = fig.names,
     URL = fig.links,
@@ -104,9 +108,6 @@ getFigures = function(article) {
   return(list(fig.names=fig.names, fig.links = fig.links, fig.captions = fig.captions))
 }
 
-ids <- getPMCIds("nematostella","pmc",20)
-summary <- getSummary("5762905", database="pmc")
-out <- scrapeArticle("5762905")
 
 scrapey_scrape = function(searchterm, database, max_results, build_dir_tree){
   ids <- getPMCIds(searchterm,database,max_results)
