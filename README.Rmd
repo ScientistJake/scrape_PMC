@@ -1,0 +1,20 @@
+# scrape_PMC  
+A set of tools to automate image and pdf downloads from pub med central.  
+
+#### Contents: 
+1. <a href= #about>About</a>
+2. <a href = #.py>scrape_PMC.py</a>  
+  a. usage   
+  b. limitations
+3. <a href = #.r>scrape_PMC.r</a>  
+  a. usage  
+  b. limitations
+
+## <a id='about'></a>1. About 
+scrape_PMC.py and it's cousin scrape_PMC.r are a set of functions to retrieve PMC ids, download article metadata, figures, and pdfs, given a valid searchterm.
+The python implementation (python3) is a command line program accepting arguments to limit the search and control output.
+Note that NCBI explicitly prohibits paralell requests when using their services so please do not abuse their servers.
+You may also consider running the program after hours if your id list is long.
+ This tool isn't perfect and is bound to miss things, especially older articles where the formatting of the pmc html is different.
+ Suggestions for improvements to the flexibility of the scrape are welcomed.
+## <a id='.py'></a>2. scrape_PMC.py  
