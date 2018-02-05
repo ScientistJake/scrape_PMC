@@ -283,8 +283,8 @@ def get_articles(searchterm,maxretrieve=None,quiet=None, justpdf=None, dump=None
 				filename = article_prefix +'/'+ article_contents['figname'][i]+'.jpg'
 				#spaces have no place in these filenames
 				filename = re.sub(' ','_',filename)
-				if len(filename) > 20:
-					filename = filename[0:19]
+				if len(filename) > 100:
+					filename = filename[0:99]
 				imageurl = article_contents['image'][i]
 				#this downloads the image:
 				try:
