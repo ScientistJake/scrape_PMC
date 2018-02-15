@@ -34,7 +34,7 @@ To do this, use pubmed central's search builder.
 <img src='img/fig_3.jpg'></img>  
 -Use this as the search term.  
 
-## <a id='.py'></a>3. scrape_PMC.py  
+## <a id='.py'></a>4. scrape_PMC.py  
 ### a. requirements 
   1. `python3.6.X` or greater
   2. <a href='https://www.crummy.com/software/BeautifulSoup/'>`beautifulsoup4`</a> (comes with anaconda distro)  
