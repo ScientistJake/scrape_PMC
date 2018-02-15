@@ -56,13 +56,13 @@ Scrapes occasionally fail for older articles and very occasionally the figure fi
 ## <a id='.r'></a>3. scrape_PMC.r  
 A set of functions that could eventually be packaged. 
 Development on hold in favor of scrape_PMC.py
-### requirements  
+### a. requirements  
   1. `RCurl`  
   2. `XML`  
   3. `httr`  
   4. `rvest`  
   5. `stringr`
-### usage  
+### b. usage  
 Retrieve pubmed central ids using a searchterm:  
 `getPMCIds(searchterm,database,maxretrieve)`  
 `searchterm`: a string to search pmc. See <a href=#advanced>Advanced Searches</a> for help constructing an advanced term.  
@@ -74,11 +74,11 @@ Get metadata for an article:
 `id`: pubmed central id  
 `database`: database to search. default =`pmc`.  
 
-Download article figures and metadata.
+Download article figures and metadata.  
 `downloadArticles(searchterm, database='pmc', max_results=20)`  
 `searchterm`: a string to search pmc. See <a href=#advanced>Advanced Searches</a> for help constructing an advanced term. 
 `database`: Database to search.  default = `pmc`.  
 `max_results`:  number of articles to retrieve. Default = 20. Article list is ranked by relevance to search term.  
-### limitations 
+### c. limitations 
 Still need to add PDF downloading, and `pdf_only` mode.
 
