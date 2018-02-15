@@ -12,7 +12,7 @@ library("httr")
 library("rvest")
 library("stringr")
 
-getPMCIds <- function(searchterm,database,maxretrieve){
+getPMCIds <- function(searchterm,database="pmc",maxretrieve=20){
   urlbase <- "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?"
   query <- paste0(urlbase,"db=",database,"&term=",searchterm,"&retmode=xml&retmax=",maxretrieve)
   response = getURL(query)
@@ -109,7 +109,7 @@ getFigures = function(article) {
 }
 
 
-scrapey_scrape = function(searchterm, database, max_results, build_dir_tree){
+downloadArticles = function(searchterm, database='pmc', max_results=20){
   ids <- getPMCIds(searchterm,database,max_results)
   
   for (id in ids){
@@ -123,7 +123,7 @@ scrapey_scrape = function(searchterm, database, max_results, build_dir_tree){
     if(dir.exists(dirname)){
       files <- list.files()
       #odd way to count but it works
-      exist_number <- length(which(str_detect(files,"test")))
+      exist_number <- length(which(str_detect(files,dirname)))
       new_dirname <- paste0(dirname,"_",exist_number+1)
       dir.create(new_dirname)
     } else{

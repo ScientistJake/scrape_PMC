@@ -2,12 +2,13 @@
 A set of tools to automate image and pdf downloads from pub med central.  
 
 #### Contents: 
-1. <a href= #about>About</a>
-2. <a href = #.py>scrape_PMC.py</a>  
+1. <a href= #about>About</a>  
+2. <a href= #advanced>Advanced Searches</a>
+3. <a href = #.py>scrape_PMC.py</a>  
   a. requirements  
   b. usage   
   c. limitations
-3. <a href = #.r>scrape_PMC.r</a>  
+4. <a href = #.r>scrape_PMC.r</a>  
   a. requirements  
   b. usage  
   c. limitations
@@ -19,7 +20,21 @@ Note that NCBI explicitly prohibits paralell requests when using their services 
 You may also consider running the program after hours if your id list is long.
  This tool isn't perfect and is bound to miss things, especially older articles where the formatting of the pmc html is different.
  Suggestions for improvements to the flexibility of the scrape are welcomed.
-## <a id='.py'></a>2. scrape_PMC.py  
+## <a id='advanced'></a>2. Advanced Searches  
+Simple search terms often return many results. The default output is a maximum of 20 articles, retrieved in order of relevance.
+<a href = #.py>scrape_PMC.py</a> offers date limits to narrow the search. To further refine the results, advanced searches can be used to limit the searchterm by author, journal etc.
+To do this, use pubmed central's search builder.  
+-First go to <a href='https://www.ncbi.nlm.nih.gov/pmc/'>pubmed central</a>:  
+-Then click advanced:  
+<img src='img/fig_1.jpg'></img>  
+-Use the form to build the query:  
+<img src='img/fig_2.jpg'></img>  
+-Click 'Search'.  
+-Verify the results and copy the url after `?term=`:  
+<img src='img/fig_3.jpg'></img>  
+-Use this as the search term.  
+
+## <a id='.py'></a>3. scrape_PMC.py  
 ### a. requirements 
   1. `python3.6.X` or greater
   2. <a href='https://www.crummy.com/software/BeautifulSoup/'>`beautifulsoup4`</a> (comes with anaconda distro)  
@@ -31,4 +46,39 @@ You may also consider running the program after hours if your id list is long.
 `--max_date`: newest publication date limit. must be used with `--min_date`.  
 `--pdfs_only`: only output pdfs, not figures.  
 `--dump_mode`: save pdfs to current working directory (won't create sub directories). Can only be used with `--pdfs_only`.  
-`--quiet`: only output errors to std out.
+`--quiet`: only output errors to std out.  
+### c. limitations  
+Scrapes occasionally fail for older articles and very occasionally the figure file names include part of the caption.
+ There is room for improvement in the scrape code.  
+ `--dump_mode` for now only works with `--pdfs_only` this is to avoid duplicate figure names being dumped into one directory.
+  Could consider adding the author and year in the figure file name in the future.  
+  
+## <a id='.r'></a>3. scrape_PMC.r  
+A set of functions that could eventually be packaged. 
+Development on hold in favor of scrape_PMC.py
+### requirements  
+  1. `RCurl`  
+  2. `XML`  
+  3. `httr`  
+  4. `rvest`  
+  5. `stringr`
+### usage  
+Retrieve pubmed central ids using a searchterm:  
+`getPMCIds(searchterm,database,maxretrieve)`  
+`searchterm`: a string to search pmc. See <a href=#advanced>Advanced Searches</a> for help constructing an advanced term.  
+`database`: Database to search.  default = `pmc`.  
+`maxretrieve`:  number of articles to retrieve. Default = 20. Article list is ranked by relevance to search term. 
+
+Get metadata for an article:  
+`getSummary(id, database="pmc")`  
+`id`: pubmed central id  
+`database`: database to search. default =`pmc`.  
+
+Download article figures and metadata.
+`downloadArticles(searchterm, database='pmc', max_results=20)`  
+`searchterm`: a string to search pmc. See <a href=#advanced>Advanced Searches</a> for help constructing an advanced term. 
+`database`: Database to search.  default = `pmc`.  
+`max_results`:  number of articles to retrieve. Default = 20. Article list is ranked by relevance to search term.  
+### limitations 
+Still need to add PDF downloading, and `pdf_only` mode.
+
