@@ -183,9 +183,11 @@ def scrape_article(id):
 		figresponse = urllib.request.urlopen(figrequest)
 		linkpage = figresponse.read()
 		linksoup = BeautifulSoup(linkpage, "lxml")
+		#remove comments
+		comments = linksoup.findAll(text=lambda text:isinstance(text, Comment))
+		[comment.extract() for comment in comments]
 
-		#each of these is in a loop because there can be more than one figure on a page.
-	
+		#each of these is in a loop because there can be more than one figure on a page.	
 		#the figure name is just before the figure div, use previous.sibling
 		for elem in linksoup.find_all('div','figure'):
 			try:
