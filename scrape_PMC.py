@@ -6,7 +6,7 @@ Python3
 Report bugs or issues here: https://github.com/ScientistJake/scrape_PMC/issues
 '''
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Comment
 import argparse
 import urllib
 import urllib.request
