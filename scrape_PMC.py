@@ -6,13 +6,14 @@ Python3
 Report bugs or issues here: https://github.com/ScientistJake/scrape_PMC/issues
 '''
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Comment
 import argparse
 import urllib
 import urllib.request
 import re
 import os
 import sys
+import random
 
 ####
 #
@@ -183,6 +184,9 @@ def scrape_article(id):
 		figresponse = urllib.request.urlopen(figrequest)
 		linkpage = figresponse.read()
 		linksoup = BeautifulSoup(linkpage, "lxml")
+		#remove the comments so it doesnt confuse the scrape
+		for element in linksoup(text=lambda text: isinstance(text, Comment)):
+			element.extract()
 
 		#each of these is in a loop because there can be more than one figure on a page.
 	
@@ -202,7 +206,25 @@ def scrape_article(id):
 		#get the caption(s)
 		for elem in linksoup.find_all('div','caption'):
 			caption.append(elem.text)
-
+		
+		#top up the caption?
+		#sometimes there's on caption for two images. This just repeats the caption.
+		while len(caption) < len(figname):
+			caption.append(caption[-1])
+	
+	#check the figure names:
+	#sometimes the scrape will catch a weird name if there's more than 1 image to a figure
+	#this will add a name
+	goodname = 'figX'
+	j = 2
+	for i in range(len(figname)):
+		if re.search('fig',figname[i], re.IGNORECASE):
+			goodname = figname[i]
+			j= 2
+		else:
+			figname[i] = goodname + "." + str(j)
+			j += 1
+	
 	#load everything into the dictionary:
 	article_contents['figname'] = figname
 	article_contents['image'] = image
@@ -247,11 +269,14 @@ def get_articles(searchterm,maxretrieve=None,quiet=None, justpdf=None, dump=None
 	#retrieve ids for the searchterm
 	ids = get_pmc_ids(searchterm, maxretrieve)
 	
-	
 	#Download article contents and pdf for each id
 	for id in ids:
 		#get metadata and summary
-		summary = get_summary(id[0])
+		try:
+			summary = get_summary(id[0])
+		except:
+			print('Article not formatted for PMC. Skiping ID : '+ id[0])
+			continue
 		article_prefix = summary['pubyear']+'_'+summary['first_author']
 		#spaces have no place in these filenames
 		article_prefix = re.sub(' ','_',article_prefix)
@@ -272,7 +297,7 @@ def get_articles(searchterm,maxretrieve=None,quiet=None, justpdf=None, dump=None
 	
 		#get figures
 		if not quiet:
-			print('Downloading: '+summary['first_author']+' et al. '+summary['pubyear'])
+			print('Downloading: '+summary['first_author']+' et al. '+summary['pubyear']+' PMCID:'+id[0])
 		article_contents = scrape_article(id[0])
 
 		#this block gets the figures
