@@ -351,7 +351,7 @@ def get_articles(searchterm,maxretrieve=None,quiet=None, justpdf=None, dump=None
 			pdffile = article_prefix +'/'+article_prefix+'.pdf'
 
 		try:
-			urllib.request.urlretrieve(article_contents['pdf'], filename=pdffile)
+			urllib.request.urlretrieve(article_contents['pdf_link'], filename=pdffile)
 		except:
 			print("Couldn't locate pdf")
 
