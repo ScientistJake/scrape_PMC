@@ -54,10 +54,8 @@ Scrapes occasionally fail for older articles and very occasionally the figure fi
   Could consider adding the author and year in the figure file name in the future.  
   
 ## <a id='.r'></a>3. scrape_PMC.r  
-<span style="color:red">  
-### WARNING: I Stopped working on this one! May or may not work.
+### WARNING: I Stopped working on this one! May or may not work.  
 ### Use the python version!  
-</span>  
 A set of functions that could eventually be packaged. 
 Development on hold in favor of scrape_PMC.py
 ### a. requirements  
