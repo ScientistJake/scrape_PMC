@@ -8,12 +8,11 @@ Report bugs or issues here: https://github.com/ScientistJake/scrape_PMC/issues
 from bs4 import BeautifulSoup, Comment
 import argparse
 import urllib
-import urllib.request
+from urllib.request import Request, urlopen
 import re
 import os
 import sys
 import random
-from urllib.request import Request, urlopen
 
 ####
 #
@@ -52,12 +51,16 @@ def get_pmc_ids(searchterm, maxretrieve=None,db=None):
 #
 ####
 def get_article_contents(webenv, querykey, maxretrieve=None,db=None,quiet=None):
-	
+	'''
+	get_article_contents:
+	webenv = a webEnv string returned from an esesrch request from get_article_ids().
+	querykey = 
+	maxretrieve = integer indicating number of records to retrieve
+	db = database to be searched. Only uses pmc for now
+	returns a dictionary containing all of the article metadata and figure links
+	'''	
 	ncbibase = "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC"
-	
-	opener = urllib.request.build_opener()
-	opener.addheaders = [('User-agent', 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:55.0) Gecko/20100101 Firefox/55.0')]
-	urllib.request.install_opener(opener)
+
 
 	if maxretrieve is None :
 		maxretrieve = 20
@@ -124,6 +127,12 @@ def get_article_contents(webenv, querykey, maxretrieve=None,db=None,quiet=None):
 #
 ####
 def get_article_summary(article):
+	'''
+	get_article_summary:
+	article = an xml record for one <article> tag
+	searches the xml for author, journal, title and other article metadata
+	returns a dictionary containing all of the article metadata and figure links
+	'''	
 	#article is an xml record for one <article> tag
 	
 	#put it here:
@@ -192,7 +201,6 @@ def scrape_article(id):
 	scrape_article:
 	id = pubmed central id
 	returns a dictionary with figure, pdf locations; caption and figure names
-	
 	scrapes the pmc article site
 	'''
 	#this is where we store the results
@@ -290,10 +298,12 @@ def scrape_article(id):
 #
 ####
 def get_figures_from_xml(article):
-	#article is an xml pmc report
-	#loop over the figures
-	#extract captions
-	#get figure names and image links
+	'''
+	get_figures_from_xml:
+	article = an xml pmc report
+	old function to find figure info from efetch xml report
+	stopped using because not all efetch results have figures
+	'''
 	fignames = []
 	captions = []
 	images = []
@@ -326,6 +336,12 @@ def get_figures_from_xml(article):
 				j += 1
 
 def get_pdf(pmc_id,quiet=None):
+	'''
+	get_pdf:
+	pmc_id = a pubmed central article id
+	returns a string of the pdf link location
+	visits the article page pdf directory and captures the redirect url
+	'''
 	if not quiet is None :
 		quiet = True
 	#attempt to find a url
@@ -345,6 +361,13 @@ def get_pdf(pmc_id,quiet=None):
 #
 ####	
 def download_articles(searchterm,maxretrieve=None,quiet=None, db=None):
+	'''
+	download_articles:
+	searchterm = a string containing the search term, no spaces.
+	maxretrieve = integer indicating number of records to retrieve
+	db = database to be searched. Only uses pmc for now
+	makes directories and downloads the figures for the articles
+	'''
 	#parse the arguments:
 	if maxretrieve is None :
 		maxretrieve = 20
@@ -430,6 +453,14 @@ def download_articles(searchterm,maxretrieve=None,quiet=None, db=None):
 #
 ####
 def pdf_dump(searchterm,maxretrieve=None,quiet=None, db=None):
+	'''
+	pdf_dump:
+	searchterm = a string containing the search term, no spaces.
+	maxretrieve = integer indicating number of records to retrieve
+	db = database to be searched. Only uses pmc for now
+	this is for the --pdf_dump program. It downloads article pdfs and names them by year_author_papernumber
+	faster than the main program because it skips the figure scrape.
+	'''
 	#parse the arguments:
 	if maxretrieve is None :
 		maxretrieve = 20
@@ -508,6 +539,11 @@ args = parser.parse_args()
 
 #replace spaces in search term
 searchterm = re.sub(" ", "+", args.searchterm)
+
+#need these headers for our requests:
+opener = urllib.request.build_opener()
+opener.addheaders = [('User-agent', 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:55.0) Gecko/20100101 Firefox/55.0')]
+urllib.request.install_opener(opener)
 
 #check for max articles:
 if args.max_articles:
